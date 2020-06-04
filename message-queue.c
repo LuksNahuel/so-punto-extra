@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 /*
 	Creamos una estructura de datos que obligatoriamente su primer atributo deba ser un long para identificar el tipo de mensajes,
@@ -57,7 +58,9 @@ int main()
 		// que pueda enviarlo y luego el proceso que recibe se bloquea hasta que pueda recibir un mensaje desde la cola.
 		msgsnd(msgqueue_id, &message, sizeof(message) - sizeof(long), 0);
 		printf("Mensaje enviado\n");
+		exit(0);
 	} else {
+		wait(NULL);
 		// En el proceso padre vuelvo a crear un proceso, esta vez el proceso que va a recibir el mensaje.
 		receiver = fork();
 		if(receiver == 0) {
@@ -72,7 +75,9 @@ int main()
 			printf("Mensaje recibido: %c. Del proceso: %d. Al proceso: %d.\n", message.message, message.sender, message.receiver);
 			// Luego de que recibi el mensaje destruyo la cola.
 			msgctl(msgqueue_id, IPC_RMID, 0);
+			exit(0);
 		}
+		wait(NULL);
 	}
 	return 0;
 }
